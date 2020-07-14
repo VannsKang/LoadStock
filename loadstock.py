@@ -6,43 +6,62 @@ from PyQt5.QAxContainer import *
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
+        self.kiwoom.dynamicCall("CommConnect()")
+
+        self.kiwoom.OnEventConnect.connect(self.event_connect)
+        self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)
+
         self.setWindowTitle("PyStock")
         self.setGeometry(300, 300, 300, 400)
 
-        label = QLabel('종목코드: ', self)
+        label = QLabel('StockCode: ', self)
         label.move(20, 20)
 
         self.code_edit = QLineEdit(self)
         self.code_edit.move(80, 20)
         self.code_edit.setText("039490")
 
-        btn1 = QPushButton("조회", self)
+        btn1 = QPushButton("Search", self)
         btn1.move(190, 20)
-
-        # self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
-        # self.kiwoom.dynamicCall("CommConnect()")
+        btn1.clicked.connect(self.btn1_clicked)
 
         self.text_edit = QTextEdit(self)
         self.text_edit.setGeometry(10,60,280,80)
         self.text_edit.setEnabled(False)
 
-    #     self.kiwoom.OnEventConnect.connect(self.event_connect)
+        # self.kiwoom.OnReceiveTrData.Connect(self.receive_trdata)
 
-    # def event_connect(self, err_code):
-    #     if err_code == 0:
-    #         self.text_edit.append("login success")
+    def event_connect(self, err_code):
+        if err_code == 0:
+            self.text_edit.append("Login Success")
 
         # btn1 = QPushButton("Login", self)
         # btn1.move(20,20)
-        # btn1.clicked.connect(self.btn1_clicked)
         #
         # btn1 = QPushButton("Check state", self)
         # btn1.move(20, 70)
         # btn1.clicked.connect(self.btn2_clicked)
 
-    # def btn1_clicked(self):
-    #     ret = self.kiwoom.dynamicCall("CommConnect()")
-    #
+    def btn1_clicked(self):
+        code = self.code_edit.text()
+        self.text_edit.append("StockCode: "+code)
+
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "StockCode", code)
+
+        self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
+
+        # ret = self.kiwoom.dynamicCall("CommConnect()")
+
+    def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
+        if rqname == "opt10001_req":
+            name = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockname")
+            volume = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockvolume")
+            self.text_edit.append("Stockname: " + name.strip())
+            self.text_edit.append("Stockvolume: " + volume.strip())
+
+
     # def btn2_clicked(self):
     #     if self.kiwoom.dynamicCall("GetConnectState()") == 0 :
     #         self.statusBar().showMessage("Not connected")
@@ -51,8 +70,8 @@ class MyWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    mywindow = MyWindow()
-    mywindow.show()
+    myWindow = MyWindow()
+    myWindow.show()
     app.exec_()
 
 # app = QApplication(sys.argv)
