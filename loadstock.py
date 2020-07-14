@@ -9,18 +9,28 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("PyStock")
         self.setGeometry(300, 300, 300, 400)
 
-        self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
-        self.kiwoom.dynamicCall("CommConnect()")
+        label = QLabel('종목코드: ', self)
+        label.move(20, 20)
+
+        self.code_edit = QLineEdit(self)
+        self.code_edit.move(80, 20)
+        self.code_edit.setText("039490")
+
+        btn1 = QPushButton("조회", self)
+        btn1.move(190, 20)
+
+        # self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
+        # self.kiwoom.dynamicCall("CommConnect()")
 
         self.text_edit = QTextEdit(self)
         self.text_edit.setGeometry(10,60,280,80)
         self.text_edit.setEnabled(False)
 
-        self.kiwoom.OnEventConnect.connect(self.event_connect)
+    #     self.kiwoom.OnEventConnect.connect(self.event_connect)
 
-    def event_connect(self, err_code):
-        if err_code == 0:
-            self.text_edit.append("login success")
+    # def event_connect(self, err_code):
+    #     if err_code == 0:
+    #         self.text_edit.append("login success")
 
         # btn1 = QPushButton("Login", self)
         # btn1.move(20,20)
