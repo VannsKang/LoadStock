@@ -10,32 +10,30 @@ class MyWindow(QMainWindow):
         self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
         self.kiwoom.dynamicCall("CommConnect()")
 
-        self.kiwoom.OnEventConnect.connect(self.event_connect)
-        self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)
+        # self.kiwoom.OnEventConnect.connect(self.event_connect)
+        # self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)
 
-        self.setWindowTitle("PyStock")
-        self.setGeometry(300, 300, 300, 400)
+        self.setWindowTitle("Stockcode")
+        self.setGeometry(300, 300, 300, 150)
 
-        label = QLabel('StockCode: ', self)
-        label.move(20, 20)
+        # label = QLabel('StockCode: ', self)
+        # label.move(20, 20)
 
-        self.code_edit = QLineEdit(self)
-        self.code_edit.move(80, 20)
-        self.code_edit.setText("039490")
+        # self.code_edit = QLineEdit(self)
+        # self.code_edit.move(80, 20)
+        # self.code_edit.setText("039490")
 
-        btn1 = QPushButton("Search", self)
-        btn1.move(190, 20)
+        btn1 = QPushButton("Get Stockcode", self)
+        btn1.move(190, 10)
         btn1.clicked.connect(self.btn1_clicked)
 
-        self.text_edit = QTextEdit(self)
-        self.text_edit.setGeometry(10,60,280,80)
-        self.text_edit.setEnabled(False)
+        self.listWidget = QListWidget(self)
+        self.listWidget.setGeometry(10, 10, 170, 130)
 
-        # self.kiwoom.OnReceiveTrData.Connect(self.receive_trdata)
+        # self.text_edit = QTextEdit(self)
+        # self.text_edit.setGeometry(10,60,280,80)
 
-    def event_connect(self, err_code):
-        if err_code == 0:
-            self.text_edit.append("Login Success")
+        # self.text_edit.setEnabled(False)
 
         # btn1 = QPushButton("Login", self)
         # btn1.move(20,20)
@@ -45,21 +43,36 @@ class MyWindow(QMainWindow):
         # btn1.clicked.connect(self.btn2_clicked)
 
     def btn1_clicked(self):
-        code = self.code_edit.text()
-        self.text_edit.append("StockCode: "+code)
+        # code = self.code_edit.text()
+        # self.text_edit.append("StockCode: "+code)
+        #
+        # self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "StockCode", code)
+        #
+        # self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
 
-        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "StockCode", code)
+        # account_num = self.kiwoom.dynamicCall("GetLoginInfo(QString)", ["ACCNO"])
+        # self.text_edit.append("Account Info: " + account_num.rstrip(';'))
+        #
+        ret = self.kiwoom.dynamicCall("GetCodeListByMarket(QString)", ["0"])
+        kospi_code_list = ret.split(';')
+        kospi_code_name_list = []
 
-        self.kiwoom.dynamicCall("CommRqData(QString, QString, int, QString)", "opt10001_req", "opt10001", 0, "0101")
+        for x in kospi_code_list:
+            name = self.kiwoom.dynamicCall("GetMasterCodeName(QString)", [x])
+            kospi_code_name_list.append(x+" : "+name)
 
-        # ret = self.kiwoom.dynamicCall("CommConnect()")
+        self.listWidget.addItems(kospi_code_name_list)
 
-    def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
-        if rqname == "opt10001_req":
-            name = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockname")
-            volume = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockvolume")
-            self.text_edit.append("Stockname: " + name.strip())
-            self.text_edit.append("Stockvolume: " + volume.strip())
+    # def event_connect(self, err_code):
+    #     if err_code == 0:
+    #         self.text_edit.append("Login Success")
+
+    # def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
+    #     if rqname == "opt10001_req":
+    #         name = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockname")
+    #         volume = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, 0, "Stockvolume")
+    #         self.text_edit.append("Stockname: " + name.strip())
+    #         self.text_edit.append("Stockvolume: " + volume.strip())
 
 
     # def btn2_clicked(self):
